@@ -10,16 +10,16 @@ class Settings(BaseSettings):
     APP_NAME: str = "Telegram Premium Sender API"
     APP_VERSION: str = "1.0.0"
     
-    TELEGRAM_API_ID: int = Field(default=0, description="Telegram API ID from my.telegram.org")
-    TELEGRAM_API_HASH: str = Field(default="", description="Telegram API Hash from my.telegram.org")
+    API_ID: int = Field(default=0, description="Telegram API ID from my.telegram.org")
+    API_HASH: str = Field(default="", description="Telegram API Hash from my.telegram.org")
     
     @property
-    def API_ID(self) -> int:
-        return self.TELEGRAM_API_ID
+    def TELEGRAM_API_ID(self) -> int:
+        return self.API_ID
     
     @property
-    def API_HASH(self) -> str:
-        return self.TELEGRAM_API_HASH
+    def TELEGRAM_API_HASH(self) -> str:
+        return self.API_HASH
     
     API_KEY: Optional[str] = Field(default=None, description="Main API key for authentication")
     API_KEY_FILE: str = "api_key.txt"
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     WORKDIR: str = "."
     
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = 9003
     
     MAX_RETRIES: int = 5
     RETRY_BASE_DELAY: float = 1.0
