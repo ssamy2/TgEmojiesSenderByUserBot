@@ -54,7 +54,11 @@ class ClientManager:
             
             await self._client.start()
             
-            if not await self._client.is_authorized():
+            try:
+                me = await self._client.get_me()
+                if not me:
+                    raise SessionNotAuthorizedError()
+            except Exception:
                 await self._client.stop()
                 self._client = None
                 raise SessionNotAuthorizedError()
@@ -66,7 +70,14 @@ class ClientManager:
                 self._client = None
     
     async def get_status(self) -> AccountStatus:
-        if not self._client or not await self._client.is_authorized():
+        if not self._client:
+            raise SessionNotAuthorizedError()
+        
+        try:
+            me: User = await self._client.get_me()
+            if not me:
+                raise SessionNotAuthorizedError()
+        except Exception:
             raise SessionNotAuthorizedError()
         
         me: User = await self._client.get_me()
@@ -132,31 +143,37 @@ class ClientManager:
         if not self._client:
             raise SessionNotAuthorizedError()
         
-        from utils.formatter import MessageFormatter, parse_target
+        from utils.formatter import parse_target
+        import re
         
         try:
             target = parse_target(target)
             
-            entities = None
-            if parse_mode.lower() != "none":
-                entities = MessageFormatter.extract_entities(
+            # --- CUSTOM EMOJI CONVERSION ---
+            # Telethon-style <tg-emoji emoji-id="123"> -> Pyrogram-style <emoji id="123">
+            if parse_mode.lower() == "html":
+                text = re.sub(
+                    r'<tg-emoji\s+emoji-id=["\'](\d+)["\']>(.*?)</tg-emoji>', 
+                    r'<emoji id="\1">\2</emoji>', 
                     text, 
-                    parse_mode.lower()
+                    flags=re.IGNORECASE
                 )
+            # -------------------------------
             
+            from pyrogram.enums import ParseMode as PyrogramParseMode
             async def _send():
-                if entities:
-                    return await self._client.send_message(
-                        chat_id=target,
-                        text=text,
-                        entities=entities
-                    )
-                else:
-                    return await self._client.send_message(
-                        chat_id=target,
-                        text=text,
-                        parse_mode=parse_mode
-                    )
+                # Map the string parse_mode to Pyrogram's Enum
+                pm = None
+                if parse_mode.lower() == "html":
+                    pm = PyrogramParseMode.HTML
+                elif parse_mode.lower() == "markdown":
+                    pm = PyrogramParseMode.MARKDOWN
+
+                return await self._client.send_message(
+                    chat_id=target,
+                    text=text,
+                    parse_mode=pm
+                )
             
             message = await exponential_backoff_retry(
                 _send,

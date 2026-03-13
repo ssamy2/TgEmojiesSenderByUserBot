@@ -7,7 +7,7 @@ from schemas.requests import StatusRequest, StatusResponse
 from utils.errors import handle_telegram_error, APIError
 
 
-router = APIRouter(prefix="/api/v1", tags=["Status"])
+router = APIRouter(tags=["Status"])
 
 
 async def verify_api_key(api_key: str) -> bool:

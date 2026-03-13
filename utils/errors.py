@@ -69,7 +69,7 @@ class SessionNotFoundError(APIError):
         super().__init__(
             code=ErrorCode.SESSION_NOT_FOUND,
             message="Telegram session not found. Please login first.",
-            status_code=404
+            status_code=401
         )
 
 

@@ -7,7 +7,7 @@ from schemas.requests import JoinRequest, JoinResponse
 from utils.errors import handle_telegram_error, APIError
 
 
-router = APIRouter(prefix="/api/v1", tags=["Join"])
+router = APIRouter(tags=["Join"])
 
 
 async def verify_api_key(api_key: str) -> bool:

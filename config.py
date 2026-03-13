@@ -22,13 +22,13 @@ class Settings(BaseSettings):
         return self.API_HASH
     
     API_KEY: Optional[str] = Field(default=None, description="Main API key for authentication")
-    API_KEY_FILE: str = "api_key.txt"
+    API_KEY_FILE: str = str(Path(__file__).parent / "api_key.txt")
     
-    SESSIONS_DIR: str = "sessions"
-    WORKDIR: str = "."
+    SESSIONS_DIR: str = str(Path(__file__).parent / "sessions")
+    WORKDIR: str = str(Path(__file__).parent)
     
     HOST: str = "0.0.0.0"
-    PORT: int = 9003
+    PORT: int = 9004
     
     MAX_RETRIES: int = 5
     RETRY_BASE_DELAY: float = 1.0
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MINUTE: int = 30
     
     class Config:
-        env_file = ".env"
+        env_file = Path(__file__).parent / ".env"
         extra = "allow"
 
     def __init__(self, **kwargs):

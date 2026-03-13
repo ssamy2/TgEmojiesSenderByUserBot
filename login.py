@@ -15,7 +15,7 @@ from pyrogram.errors import SessionPasswordNeeded, BadRequest
 from config import settings
 
 
-def main():
+async def login():
     session_dir = Path(settings.SESSIONS_DIR)
     session_dir.mkdir(exist_ok=True)
     session_path = settings.get_session_path("main")
@@ -30,50 +30,48 @@ def main():
         name=str(session_path).replace(".session", ""),
         api_id=settings.API_ID,
         api_hash=settings.API_HASH,
-        workdir=settings.WORKDIR
+        workdir=settings.WORKDIR,
+        in_memory=False
     )
     
-    async def login():
-        await client.connect()
+    await client.connect()
+    
+    try:
+        sent_code = await client.send_code(PHONE)
+        print(f"\n[INFO] Code sent to {PHONE}")
+        
+        code = input("Enter the verification code: ").strip()
         
         try:
-            sent_code = await client.send_code(PHONE)
-            print(f"\n[INFO] Code sent to {PHONE}")
+            await client.sign_in(
+                phone_number=PHONE,
+                phone_code_hash=sent_code.phone_code_hash,
+                phone_code=code
+            )
+            print("\n[SUCCESS] Successfully signed in!")
             
-            code = input("Enter the verification code: ").strip()
+        except SessionPasswordNeeded:
+            password = input("Two-step verification is enabled. Enter your password: ").strip()
+            await client.sign_in(
+                phone_number=PHONE,
+                password=password,
+                phone_code_hash=sent_code.phone_code_hash
+            )
+            print("\n[SUCCESS] Successfully signed in with 2FA!")
             
-            try:
-                await client.sign_in(
-                    phone_number=PHONE,
-                    phone_code_hash=sent_code.phone_code_hash,
-                    phone_code=code
-                )
-                print("\n[SUCCESS] Successfully signed in!")
-                
-            except SessionPasswordNeeded:
-                password = input("Two-step verification is enabled. Enter your password: ").strip()
-                await client.sign_in(
-                    phone_number=PHONE,
-                    password=password,
-                    phone_code_hash=sent_code.phone_code_hash
-                )
-                print("\n[SUCCESS] Successfully signed in with 2FA!")
-                
-        except BadRequest as e:
-            print(f"\n[ERROR] Verification failed: {e}")
-            await client.disconnect()
-            sys.exit(1)
-        
+    except BadRequest as e:
+        print(f"\n[ERROR] Verification failed: {e}")
         await client.disconnect()
-        
-        me = await client.get_me()
-        print(f"\n[INFO] Logged in as: {me.first_name} (@{me.username})")
-        print(f"[INFO] Premium: {me.is_premium}")
-        print(f"[INFO] User ID: {me.id}")
-        print("\n[SUCCESS] Session created! You can now use the API.")
-        
-    asyncio.run(login())
+        sys.exit(1)
+    
+    me = await client.get_me()
+    print(f"\n[INFO] Logged in as: {me.first_name} (@{me.username})")
+    print(f"[INFO] Premium: {me.is_premium}")
+    print(f"[INFO] User ID: {me.id}")
+    
+    await client.disconnect()
+    print("\n[SUCCESS] Session created! You can now use the API.")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(login())
