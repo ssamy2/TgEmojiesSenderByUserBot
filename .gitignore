@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+sessions/
+*.session
+api_key.txt
+.env
+*.log
+.DS_Store

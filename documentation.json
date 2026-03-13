@@ -1,0 +1,285 @@
+{
+  "api_name": "Telegram Premium Sender API",
+  "version": "1.0.0",
+  "description": "API for sending Telegram messages with premium emoji support using user accounts",
+  
+  "authentication": {
+    "type": "API Key",
+    "header": "X-API-Key or as request body parameter",
+    "description": "A secure 256-bit API key is required for all endpoints except /status",
+    "security": "Store API key securely. It is auto-generated on first run in api_key.txt"
+  },
+  
+  "endpoints": {
+    "/": {
+      "method": "GET",
+      "description": "API information",
+      "parameters": {},
+      "response": {
+        "success": true,
+        "name": "Telegram Premium Sender API",
+        "version": "1.0.0",
+        "status": "running"
+      }
+    },
+    
+    "/health": {
+      "method": "GET",
+      "description": "Health check endpoint",
+      "parameters": {},
+      "response": {
+        "status": "healthy"
+      }
+    },
+    
+    "/api/v1/status": {
+      "method": "GET",
+      "description": "Check account status and premium availability",
+      "parameters": {
+        "api_key": {
+          "type": "string",
+          "required": true,
+          "description": "Your API authentication key"
+        }
+      },
+      "response": {
+        "success": true,
+        "ready": true,
+        "authorized": true,
+        "premium": true,
+        "username": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "user_id": 123456789
+      },
+      "example": {
+        "request": "GET /api/v1/status?api_key=your_api_key",
+        "response": {
+          "success": true,
+          "ready": true,
+          "authorized": true,
+          "premium": true,
+          "username": "myaccount",
+          "first_name": "John",
+          "last_name": "Doe",
+          "user_id": 123456789
+        }
+      }
+    },
+    
+    "/api/v1/join": {
+      "method": "POST",
+      "description": "Join a channel or group using invite link or username",
+      "parameters": {
+        "api_key": {
+          "type": "string",
+          "required": true,
+          "description": "Your API authentication key"
+        },
+        "link": {
+          "type": "string",
+          "required": true,
+          "description": "Invite link, username (with/without @), or t.me URL",
+          "examples": [
+            "https://t.me/channelname",
+            "@channelname",
+            "channelname",
+            "+123456789"
+          ]
+        }
+      },
+      "response": {
+        "success": true,
+        "chat_id": "-1001234567890",
+        "title": "Channel Name",
+        "type": "channel"
+      },
+      "example": {
+        "request": {
+          "method": "POST",
+          "url": "/api/v1/join",
+          "body": {
+            "api_key": "your_api_key",
+            "link": "https://t.me/mychannel"
+          }
+        },
+        "response": {
+          "success": true,
+          "chat_id": "-1001234567890",
+          "title": "My Channel",
+          "type": "channel"
+        }
+      }
+    },
+    
+    "/api/v1/send": {
+      "method": "POST",
+      "description": "Send a message to a channel or group with formatting and premium emoji support",
+      "parameters": {
+        "api_key": {
+          "type": "string",
+          "required": true,
+          "description": "Your API authentication key"
+        },
+        "target": {
+          "type": "string",
+          "required": true,
+          "description": "Channel username (with @) or group ID (e.g., -1001234567890)",
+          "examples": [
+            "@channelname",
+            "-1001234567890",
+            "groupname"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "required": true,
+          "description": "Message text with optional formatting and premium emoji",
+          "max_length": 4096
+        },
+        "parse_mode": {
+          "type": "string",
+          "required": false,
+          "default": "markdown",
+          "options": ["markdown", "html", "none"],
+          "description": "Text parsing mode"
+        }
+      },
+      "response": {
+        "success": true,
+        "message_id": 123,
+        "chat_id": "-1001234567890",
+        "date": "2024-01-01T12:00:00+00:00"
+      },
+      "example": {
+        "request": {
+          "method": "POST",
+          "url": "/api/v1/send",
+          "body": {
+            "api_key": "your_api_key",
+            "target": "@mychannel",
+            "message": "Hello **bold** world! 🎉✨🔥",
+            "parse_mode": "markdown"
+          }
+        },
+        "response": {
+          "success": true,
+          "message_id": 123,
+          "chat_id": "-1001234567890",
+          "date": "2024-01-01T12:00:00+00:00"
+        }
+      }
+    }
+  },
+  
+  "text_formatting": {
+    "markdown": {
+      "syntax": {
+        "bold": "**text**",
+        "italic": "__text__",
+        "code": "`code`",
+        "spoiler": "||text||",
+        "link": "[text](url)"
+      },
+      "example": "Hello **bold** and __italic__ world!"
+    },
+    "html": {
+      "syntax": {
+        "bold": "<b>text</b> or <strong>text</strong>",
+        "italic": "<i>text</i> or <em>text</em>",
+        "code": "<code>code</code>",
+        "pre": "<pre>code</pre>",
+        "spoiler": "<span class=\"spoiler\">text</span>",
+        "link": "<a href=\"url\">text</a>"
+      },
+      "example": "Hello <b>bold</b> and <i>italic</i> world!"
+    },
+    "premium_emoji": {
+      "description": "Telegram Premium users can send custom emoji in any chat",
+      "example": "Use emoji directly in message: 🎉✨🔥💯🎯",
+      "note": "Premium emoji will display correctly for Premium users and show as standard emoji for non-Premium users"
+    }
+  },
+  
+  "error_codes": {
+    "BAD_REQUEST": {
+      "code": 400,
+      "description": "Invalid request parameters"
+    },
+    "UNAUTHORIZED": {
+      "code": 401,
+      "description": "Invalid or missing API key"
+    },
+    "FORBIDDEN": {
+      "code": 403,
+      "description": "Access forbidden - account may be banned"
+    },
+    "NOT_FOUND": {
+      "code": 404,
+      "description": "Resource not found"
+    },
+    "SESSION_NOT_FOUND": {
+      "code": 404,
+      "description": "Telegram session not found. Run login.py first"
+    },
+    "SESSION_NOT_AUTHORIZED": {
+      "code": 401,
+      "description": "Telegram session not authorized"
+    },
+    "FLOOD_WAIT": {
+      "code": 420,
+      "description": "Rate limit exceeded. Exponential backoff will be applied automatically"
+    },
+    "PHONE_CODE_EXPIRED": {
+      "code": 400,
+      "description": "Verification code expired. Restart login"
+    },
+    "PHONE_CODE_INVALID": {
+      "code": 400,
+      "description": "Invalid verification code"
+    },
+    "SESSION_PASSWORD_NEEDED": {
+      "code": 400,
+      "description": "Two-step verification password required"
+    },
+    "RATE_LIMIT_EXCEEDED": {
+      "code": 429,
+      "description": "Too many requests. Retry after specified time"
+    },
+    "SERVER_ERROR": {
+      "code": 500,
+      "description": "Internal server error"
+    }
+  },
+  
+  "retry_policy": {
+    "max_attempts": 5,
+    "base_delay": 1.0,
+    "max_delay": 60.0,
+    "jitter": "random 0-1 seconds",
+    "description": "Automatic retry with exponential backoff for FloodWait (420) and RateLimit (429) errors"
+  },
+  
+  "getting_started": {
+    "step_1": {
+      "title": "Get Telegram API Credentials",
+      "description": "Visit https://my.telegram.org and create a new application to get API_ID and API_HASH"
+    },
+    "step_2": {
+      "title": "Configure Environment",
+      "description": "Copy .env.example to .env and fill in your API_ID and API_HASH"
+    },
+    "step_3": {
+      "title": "Create Session",
+      "description": "Run: python login.py and follow the prompts to authorize your account"
+    },
+    "step_4": {
+      "title": "Get API Key",
+      "description": "API key is auto-generated in api_key.txt after first run"
+    },
+    "step_5": {
+      "title": "Start API Server",
+      "description": "Run: python main.py or uvicorn main:app --host 0.0.0.0 --port 8000"
+    }
+  }
+}
